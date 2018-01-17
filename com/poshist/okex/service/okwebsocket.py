@@ -1,44 +1,52 @@
 import websocket
 import _thread
 import time
+from com.poshist.okex.service.analysis import analysisWsMessage
+
+class wsclint(object):
+    wsSendJsons=('{event:"addChannel",parameters:{"base":"xxin","binary":"0","product":"spot","quote":"xxout","type":"depth"}}','{event:"addChannel",parameters:{"base":"xxin","binary":"0","product":"spot","quote":"xxout","type":"deal"}}')
+    wsUrl="wss://okexcomreal.bafang.com:10441/websocket"
+    instr=""
+    outstr=""
+
+    def __init__(self,instr,outsrt):
+        self.instr = instr
+        self.outstr = outsrt
+
+    def on_message(self,ws,message):
+            analysisWsMessage(str(self.instr)+'-'+str(self.outstr),message)
 
 
-wsSendJsons=("{event:'addChannel',parameters:{\"base\":\"ugc\",\"binary\":\"0\",\"product\":\"spot\",\"quote\":\"usdt\",\"type\":\"depth\"}}","{event:'addChannel',parameters:{\"base\":\"ugc\",\"binary\":\"0\",\"product\":\"spot\",\"quote\":\"usdt\",\"type\":\"deal\"}}")
-wsUrl="wss://okexcomreal.bafang.com:10441/websocket"
 
-def on_message(ws, message):
-        print("Received '%s'" % message)
+    def on_error(self,ws,error):
+        print (error)
 
+    def on_close(self,ws):
+        print ("### closed ###")
+        # print("### restart ###")
+        # self.wsStart()
 
+    def on_open(self,ws):
+        def run(*args):
+            # 初始化频道
+            for wsj in self.wsSendJsons:
+                wsj=wsj.replace('xxin',self.instr)
+                wsj=wsj.replace('xxout',self.outstr)
+                ws.send(wsj)
 
-def on_error(ws, error):
-    print (error)
+            while True:
+                time.sleep(1)
 
-def on_close(ws):
-    print ("### closed ###")
+                #ws.close()
+            print ("thread terminating...")
+        _thread.start_new_thread(run, ())
 
-def on_open(ws):
-    def run(*args):
-        # 初始化频道
-        for wsj in wsSendJsons:
-            ws.send(wsj)
+    def wsStart(self):
 
-        for i in range(30000):
-            time.sleep(3)
-
-        time.sleep(1)
-        ws.close()
-        print ("thread terminating...")
-    _thread.start_new_thread(run, ())
-
-
-if __name__ == "__main__":
-    websocket.enableTrace(True)
-    ws = websocket.WebSocketApp(wsUrl,
-                                on_message = on_message,
-                                on_error = on_error,
-                                on_close = on_close)
-
-    ws.on_open = on_open
-
-    ws.run_forever()
+        websocket.enableTrace(True)
+        ws = websocket.WebSocketApp(self.wsUrl,
+                                    on_message = self.on_message,
+                                    on_error = self.on_error,
+                                    on_close = self.on_close)
+        ws.on_open = self.on_open
+        ws.run_forever()

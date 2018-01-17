@@ -1,4 +1,4 @@
-import zlib
+import json
 
-def encodeZlib(data):
-    return zlib.decompress(data, -zlib.MAX_WBITS)
+def jsonLoad(message):
+    return json.loads(message)
