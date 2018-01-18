@@ -10,7 +10,8 @@ class wsclint(object):
     outstr=""
     info=[0,0]
     dealInit=True
-    
+    buyOrders={}
+    sellOrders={}
     def __init__(self,instr,outsrt):
         self.instr = instr
         self.outstr = outsrt
