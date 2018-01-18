@@ -15,8 +15,24 @@ def analysisWsMessage(type,message,ws):
             elif('deal'==jm.get('type')):
                 analysisDeal(type,jm,ws)
             elif('kline'==jm.get('type')):
-                pass
-                #print(jm)
+                analysisKline(type,jm,ws)
+
+def analysisKline(type,jm,ws):
+    klines=jm.get('data')
+    if len(klines)==1:
+        kline=klines[0]
+        if  ws.info[1]==0:
+            if float(kline['volume'])>0:
+                str1='无限大'
+                notice(type, 'klineVule', [kline['volume'], kline['createdDate'], str1])
+        else:
+            if float(kline['volume'])/ws.info[1]>=rule.klineValue :
+                str1=str(float(kline['volume'])/ws.info[1]*100)+'%'
+                notice(type,'klineVule',[kline['volume'],kline['createdDate'],str1])
+
+    for kline in klines:
+        ws.info[1]=float(kline['volume'])
+
 
 def analysisOrder(type,jm,ws):
     sellOrders=jm.get('data').get('asks')
