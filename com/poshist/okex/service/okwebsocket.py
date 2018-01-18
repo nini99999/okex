@@ -4,17 +4,19 @@ import time
 from com.poshist.okex.service.analysis import analysisWsMessage
 
 class wsclint(object):
-    wsSendJsons=('{event:"addChannel",parameters:{"base":"xxin","binary":"0","product":"spot","quote":"xxout","type":"depth"}}','{event:"addChannel",parameters:{"base":"xxin","binary":"0","product":"spot","quote":"xxout","type":"deal"}}')
+    wsSendJsons=('{event:"addChannel",parameters:{"base":"xxin","binary":"0","product":"spot","quote":"xxout","type":"depth"}}','{event:"addChannel",parameters:{"base":"xxin","binary":"0","product":"spot","quote":"xxout","type":"deal"}}','{event:"addChannel",parameters:{"base":"xxin","binary":"0","period":"1min","product":"spot","quote":"xxout","type":"kline"}}')
     wsUrl="wss://okexcomreal.bafang.com:10441/websocket"
     instr=""
     outstr=""
-
+    info=[0,0]
+    dealInit=True
+    
     def __init__(self,instr,outsrt):
         self.instr = instr
         self.outstr = outsrt
 
     def on_message(self,ws,message):
-            analysisWsMessage(str(self.instr)+'-'+str(self.outstr),message)
+            analysisWsMessage(str(self.instr)+'-'+str(self.outstr),message,self)
 
 
 
@@ -23,8 +25,8 @@ class wsclint(object):
 
     def on_close(self,ws):
         print ("### closed ###")
-        # print("### restart ###")
-        # self.wsStart()
+        print("### restart ###")
+        self.wsStart()
 
     def on_open(self,ws):
         def run(*args):
@@ -35,7 +37,8 @@ class wsclint(object):
                 ws.send(wsj)
 
             while True:
-                time.sleep(1)
+                time.sleep(5)
+                ws.send('{"event":"ping"}')
 
                 #ws.close()
             print ("thread terminating...")
