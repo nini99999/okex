@@ -13,6 +13,9 @@ def notice(type,var,info):
     elif('deal'==var):
         timearr = time.localtime(info[2]/ 1000.0)
         reqpost(type+ '-----' +'大额成交预警:金额-  '+info[1]+ '  份数-  '+info[0]+'   时间-  '+time.strftime("%Y-%m-%d %H:%M:%S", timearr))
+    elif('dealbeetwn'==var):
+        timearr = time.localtime(info[0] / 1000.0)
+        reqpost(type + '-----' + '短时多次交易预警:时间-  '+ time.strftime( "%Y-%m-%d %H:%M:%S", timearr))
     elif('dealChange'==var):
         timearr = time.localtime(info[2] / 1000.0)
         reqpost(type+ '-----' +'价格波动预警:金额-  '+info[1]+ '  份数-  '+info[0]+'   时间-  '+time.strftime("%Y-%m-%d %H:%M:%S", timearr)+'  比上一交易单波动-  '+str(info[3])+'%')
@@ -22,7 +25,7 @@ def notice(type,var,info):
 
 def reqpost(message):
     print(message)
-    #r = requests.post("https://api.telegram.org/bot523899634:AAFKSpJ8Akg_oBdrWrIqPrkAmwZv3uh6j_I/sendMessage?parse_mode=Markdown&chat_id=-319771183&text=测试---"+message)
+    r = requests.post("https://api.telegram.org/bot523899634:AAFKSpJ8Akg_oBdrWrIqPrkAmwZv3uh6j_I/sendMessage?parse_mode=Markdown&chat_id=-319771183&text=测试---"+message)
     # print("https://api.telegram.org/bot523899634:AAFKSpJ8Akg_oBdrWrIqPrkAmwZv3uh6j_I/sendMessage?parse_mode=Markdown&chat_id=-31977183&text="+message)
     # print(r.text)
     pass

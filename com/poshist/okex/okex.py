@@ -4,7 +4,7 @@ import _thread
 import time
 
 for inout in rule.inout:
-    ws=wsclint(inout[0],inout[1])
+    ws=wsclint(inout[0],inout[1],[0,0,0],True,{},{})
     _thread.start_new_thread(ws.wsStart, ())
 while True:
     time.sleep(1)

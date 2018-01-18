@@ -7,15 +7,14 @@ from com.poshist.okex.service.rule import rule
 class wsclint(object):
     wsSendJsons=('{event:"addChannel",parameters:{"base":"xxin","binary":"0","product":"spot","quote":"xxout","type":"depth"}}','{event:"addChannel",parameters:{"base":"xxin","binary":"0","product":"spot","quote":"xxout","type":"deal"}}','{event:"addChannel",parameters:{"base":"xxin","binary":"0","period":"kPeriod","product":"spot","quote":"xxout","type":"kline"}}')
     wsUrl="wss://okexcomreal.bafang.com:10441/websocket"
-    instr=""
-    outstr=""
-    info=[0,0]
-    dealInit=True
-    buyOrders={}
-    sellOrders={}
-    def __init__(self,instr,outsrt):
+
+    def __init__(self,instr,outsrt,info,dealInit,buyOrders,sellOrders):
         self.instr = instr
         self.outstr = outsrt
+        self.info=info
+        self.dealInit=dealInit
+        self.buyOrders=buyOrders
+        self.sellOrders=sellOrders
 
     def on_message(self,ws,message):
             analysisWsMessage(str(self.instr)+'-'+str(self.outstr),message,self)

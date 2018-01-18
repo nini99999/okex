@@ -1,9 +1,10 @@
 class rule:
-    sellOrder=25000
-    buyOrder=25000
-    deal=1000
-    dealChange=0.01
+    sellOrder=40000
+    buyOrder=40000
+    deal=10000
+    dealChange=0.1
     inout=[['ugc','usdt'],['ugc','eth'],['ugc','btc']]
-    klineValue=1.001
+    klineValue=1.5
     kPeriod='1hour'
+    dealbeetwn=1800000
     #kPeriod = '1min'

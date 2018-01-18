@@ -37,6 +37,8 @@ def analysisKline(type,jm,ws):
 def analysisOrder(type,jm,ws):
     sellOrders=jm.get('data').get('asks')
     buyOrders=jm.get('data').get('bids')
+
+    print(hex(id(ws.info)))
     for sellorder in sellOrders:
         #大额卖单挂单判断
         if float(sellorder['totalSize'])>=rule.sellOrder:
@@ -58,19 +60,26 @@ def analysisOrder(type,jm,ws):
         ws.buyOrders[buyOrder['price']]=float(buyOrder['totalSize'])
 
 def analysisDeal(type,jm,ws):
+
     deals=jm.get('data')
     for deal in deals:
         #大额交易判断
         if float(deal.get('amount'))>=rule.deal:
             notice(type,'deal',[deal.get('amount'),deal.get('price'),deal.get('createdDate')])
+            if 0 == ws.info[2]:
+                 ws.info[2]=deal.get('createdDate')
+            else :
+                if (int(deal.get('createdDate'))-ws.info[2])/1000>rule.dealbeetwn:
+                    notice(type, 'dealbeetwn', deal.get('createdDate'))
         #交易差值判断
         if ws.dealInit:
             ws.dealInit=False
         else:
-            change=float(deal.get('price'))/ws.info[0]-1
+            change=(float(deal.get('price'))-ws.info[0])/ws.info[0]
+            change1=change
             if change<0:
-                change=0-change
-            if change>rule.dealChange:
+                change1=0-change
+            if change1>rule.dealChange:
                notice(type,'dealChange',[deal.get('amount'),deal.get('price'),deal.get('createdDate'),change*100])
         ws.info[0] = float(deal.get('price'))
 
