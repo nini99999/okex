@@ -1,8 +1,11 @@
-import websocket
 import _thread
 import time
+
+import websocket
+
 from com.poshist.okex.service.analysis import analysisWsMessage
 from com.poshist.okex.service.rule import rule
+
 
 class wsclint(object):
     wsSendJsons=('{event:"addChannel",parameters:{"base":"xxin","binary":"0","product":"spot","quote":"xxout","type":"depth"}}','{event:"addChannel",parameters:{"base":"xxin","binary":"0","product":"spot","quote":"xxout","type":"deal"}}','{event:"addChannel",parameters:{"base":"xxin","binary":"0","period":"kPeriod","product":"spot","quote":"xxout","type":"kline"}}')

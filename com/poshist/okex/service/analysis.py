@@ -1,6 +1,7 @@
-from com.poshist.okex.service.util import jsonLoad
-from com.poshist.okex.service.rule import rule
 from com.poshist.okex.service.notice import notice
+from com.poshist.okex.service.rule import rule
+
+from com.poshist.okex.service.util import jsonLoad
 
 
 def analysisWsMessage(type,message,ws):
@@ -15,6 +16,7 @@ def analysisWsMessage(type,message,ws):
             elif('deal'==jm.get('type')):
                 analysisDeal(type,jm,ws)
             elif('kline'==jm.get('type')):
+                print(jm)
                 analysisKline(type,jm,ws)
 
 def analysisKline(type,jm,ws):
@@ -38,25 +40,36 @@ def analysisOrder(type,jm,ws):
     sellOrders=jm.get('data').get('asks')
     buyOrders=jm.get('data').get('bids')
 
-    print(hex(id(ws.info)))
     for sellorder in sellOrders:
         #大额卖单挂单判断
-        if float(sellorder['totalSize'])>=rule.sellOrder:
-            notice(type,'sellOrder',[sellorder['price'],sellorder['totalSize']])
-        #大额卖单撤单判断
-        if(None!=ws.sellOrders.get(sellorder['price'])):
-            if ws.sellOrders.get(sellorder['price'])-float(sellorder['totalSize'])>=rule.sellOrder:
-                notice(type, 'sellOrderLost', [sellorder['price'], str(ws.sellOrders.get(sellorder['price'])-float(sellorder['totalSize']))])
+        if float(sellorder['price'])>ws.info[0]*(1-rule.orderChange) and float(sellorder['price'])<ws.info[0]*(1+rule.orderChange):
+
+            if float(sellorder['totalSize'])>=rule.sellOrder:
+                if (None==ws.sellOrders.get(sellorder['price'])):
+                    notice(type, 'sellOrder', [sellorder['price'], sellorder['totalSize']])
+                else:
+                    if float(sellorder['totalSize'])-ws.sellOrders.get(sellorder['price'])>=rule.sellOrder:
+                        notice(type,'sellOrder',[sellorder['price'],float(sellorder['totalSize'])-ws.sellOrders.get(sellorder['price'])])
+            #大额卖单撤单判断
+            if(None!=ws.sellOrders.get(sellorder['price'])):
+                if ws.sellOrders.get(sellorder['price'])-float(sellorder['totalSize'])>=rule.sellOrder:
+                    notice(type, 'sellOrderLost', [sellorder['price'], str(ws.sellOrders.get(sellorder['price'])-float(sellorder['totalSize']))])
         ws.sellOrders[sellorder['price']]=float(sellorder['totalSize'])
 
     for buyOrder in buyOrders:
+        if float(buyOrder['price']) > ws.info[0] * (1 - rule.orderChange) and float(buyOrder['price']) < ws.info[ 0] * (1 + rule.orderChange):
         #大额买单挂单预警
-        if float(buyOrder['totalSize'])>=rule.buyOrder:
-            notice(type,'buyOrder',[buyOrder['price'],buyOrder['totalSize']])
-        #大额买单撤单预警
-        if(None!=ws.buyOrders.get(buyOrder['price'])):
-            if ws.buyOrders.get(buyOrder['price'])-float(buyOrder['totalSize'])>=rule.buyOrder:
-                notice(type, 'buyOrderLost', [buyOrder['price'], str(ws.buyOrders.get(buyOrder['price'])-float(buyOrder['totalSize']))])
+            if float(buyOrder['totalSize'])>=rule.buyOrder:
+                if (None == ws.buyOrders.get(buyOrder['price'])):
+                    notice(type,'buyOrder',[buyOrder['price'],buyOrder['totalSize']])
+                else :
+                    if float(buyOrder['totalSize'])-ws.buyOrders.get(sellorder['price'])>=rule.sellOrder:
+                        notice(type, 'buyOrder', [buyOrder['price'], float(buyOrder['totalSize'])-ws.buyOrders.get(sellorder['price'])])
+
+            #大额买单撤单预警
+            if(None!=ws.buyOrders.get(buyOrder['price'])):
+                if ws.buyOrders.get(buyOrder['price'])-float(buyOrder['totalSize'])>=rule.buyOrder:
+                    notice(type, 'buyOrderLost', [buyOrder['price'], str(ws.buyOrders.get(buyOrder['price'])-float(buyOrder['totalSize']))])
         ws.buyOrders[buyOrder['price']]=float(buyOrder['totalSize'])
 
 def analysisDeal(type,jm,ws):
@@ -65,7 +78,7 @@ def analysisDeal(type,jm,ws):
     for deal in deals:
         #大额交易判断
         if float(deal.get('amount'))>=rule.deal:
-            notice(type,'deal',[deal.get('amount'),deal.get('price'),deal.get('createdDate')])
+            notice(type,'deal',[deal.get('amount'),deal.get('price'),deal.get('createdDate'),deal.get('side')])
             if 0 == ws.info[2]:
                  ws.info[2]=deal.get('createdDate')
             else :
@@ -82,6 +95,10 @@ def analysisDeal(type,jm,ws):
             if change1>rule.dealChange:
                notice(type,'dealChange',[deal.get('amount'),deal.get('price'),deal.get('createdDate'),change*100])
         ws.info[0] = float(deal.get('price'))
+        if None!=ws.sellOrders.get(deal.get('price')):
+            ws.sellOrders[deal.get('price')]=ws.sellOrders.get(deal.get('price'))-float(deal.get('amount'))
+        if None!=ws.buyOrders.get(deal.get('price')):
+            ws.buyOrders[deal.get('price')]=ws.buyOrders.get(deal.get('price'))-float(deal.get('amount'))
 
 
 
